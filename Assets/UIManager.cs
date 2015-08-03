@@ -11,25 +11,33 @@ public class UIManager : MonoBehaviour {
 		string url = "http://snowie.github.io/kurt/";
 		WWW uiResponse = new WWW (url);
 
+		//Wait to finish grabbing the UI
 		while (!uiResponse.isDone)
 			;
 
+		//Parse the response
 		var uiJSON = JSON.Parse (uiResponse.text);
 
-		JSONArray tree = (JSONArray)uiJSON ["ui"];
+		//Get the array of ui elements
+		JSONArray ui = (JSONArray)uiJSON ["ui"];
 
-		foreach(JSONNode obj in tree) {
-			RectTransform uiTrans = new RectTransform();
-			JSONNode location = obj["location"];
-			JSONNode size = obj["size"];
+		//Iterate over ui
+		foreach(JSONNode uiObj in ui) {
+			JSONNode location = uiObj["location"];
+			JSONNode size = uiObj["size"];
 
-			switch(obj["type"]) {
+			//Determine the type of ui object to render
+			switch(uiObj["type"]) {
 				case "KTButton" :
 					GameObject clone = Instantiate(button);
+					
+					//Update the rect transform as per data
 					var rt = clone.GetComponent<RectTransform>();
-					rt.anchoredPosition = new Vector2(location["x"].AsInt, location["y"].AsInt);
+					rt.anchoredPosition = new Vector2(location["x"].AsFloat, location["y"].AsFloat);
 					rt.sizeDelta = new Vector2(size["width"].AsFloat, size["height"].AsFloat);
-					clone.transform.SetParent(this.transform);
+					
+					//Set the UI's parent to the canvas	
+					clone.transform.SetParent(this.transform.parent);
 				break;
 			}
 		}
