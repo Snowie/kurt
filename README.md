@@ -80,3 +80,5 @@ mobile and the desktop.
 Unity: http://unity3d.com -- Just get the free version of Unity that's fine for our needs.
 
 Our design aesthetic is flat, simple and clean.  Think Apple, not Google matierals.
+
+![ProtoKurt](http://gyazo.com/274f9f43e73559c7b8cb5a83236cb0dc.png)

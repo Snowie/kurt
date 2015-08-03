@@ -2,8 +2,9 @@
 using System.Collections;
 using SimpleJSON;
 public class UIManager : MonoBehaviour {
-	public GameObject button;
-	public GameObject canvas;
+	public UnityEngine.UI.Button button;
+	public UnityEngine.UI.InputField inputField;
+	public UnityEngine.UI.Text textField;
 
 
 	// Use this for initialization
@@ -29,15 +30,40 @@ public class UIManager : MonoBehaviour {
 			//Determine the type of ui object to render
 			switch(uiObj["type"]) {
 				case "KTButton" :
-					GameObject clone = Instantiate(button);
+					UnityEngine.UI.Button buttonClone = Instantiate(button);
 					
 					//Update the rect transform as per data
-					var rt = clone.GetComponent<RectTransform>();
-					rt.anchoredPosition = new Vector2(location["x"].AsFloat, location["y"].AsFloat);
-					rt.sizeDelta = new Vector2(size["width"].AsFloat, size["height"].AsFloat);
+					var buttonRT = buttonClone.GetComponent<RectTransform>();
+					buttonRT.anchoredPosition = new Vector2(location["x"].AsFloat, location["y"].AsFloat);
+					buttonRT.sizeDelta = new Vector2(size["width"].AsFloat, size["height"].AsFloat);
 					
 					//Set the UI's parent to the canvas	
-					clone.transform.SetParent(this.transform.parent);
+					buttonClone.transform.SetParent(this.transform.parent);
+				break;
+
+				case "KTInputField":
+					UnityEngine.UI.InputField inputFieldClone = Instantiate(inputField);
+					//Update the rect transform as per data
+					var inputFieldRT = inputFieldClone.GetComponent<RectTransform>();
+					inputFieldRT.anchoredPosition = new Vector2(location["x"].AsFloat, location["y"].AsFloat);
+					inputFieldRT.sizeDelta = new Vector2(size["width"].AsFloat, size["height"].AsFloat);
+				
+					//Set the UI's parent to the canvas	
+					inputFieldClone.transform.SetParent(this.transform.parent);
+				break;
+
+				case "KTLabel":
+					UnityEngine.UI.Text textFieldClone = Instantiate(textField);
+					
+					textFieldClone.text = uiObj["id"].ToString();
+
+					//Update the rect transform as per data
+					var textFieldRT = textFieldClone.GetComponent<RectTransform>();
+					textFieldRT.anchoredPosition = new Vector2(location["x"].AsFloat, location["y"].AsFloat);
+					textFieldRT.sizeDelta = new Vector2(size["width"].AsFloat, size["height"].AsFloat);
+				
+					//Set the UI's parent to the canvas	
+					textFieldClone.transform.SetParent(this.transform.parent);
 				break;
 			}
 		}
