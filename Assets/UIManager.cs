@@ -14,12 +14,10 @@ public class UIManager : MonoBehaviour {
 
 	//Children of ui containers use relative positions
 	void panelLogic(RectTransform parent,JSONArray components) {
-		//Transform cParent = parent.transform;
-		RectTransform rParent = parent.GetComponent<RectTransform> ();
-
 		foreach (JSONNode uiObj in components) {
 			JSONNode location = uiObj ["location"];
 			JSONNode size = uiObj ["size"];
+			Vector2 posRelatizer = new Vector2(parent.position.x - parent.sizeDelta.x/2, parent.position.y - parent.sizeDelta.y/2);
 			
 			//Determine the type of ui object to render
 			switch (uiObj ["type"]) {
@@ -31,11 +29,11 @@ public class UIManager : MonoBehaviour {
 
 					//Update the rect transform as per data
 					var buttonRT = buttonClone.GetComponent<RectTransform> ();
-					buttonRT.anchoredPosition = new Vector2 (location ["x"].AsFloat + parent.position.x - rParent.sizeDelta.x/2, location ["y"].AsFloat + parent.position.y - rParent.sizeDelta.y/2);
+					buttonRT.anchoredPosition = new Vector2(location["x"].AsFloat, location["y"].AsFloat) + posRelatizer;
 					buttonRT.sizeDelta = new Vector2 (size ["width"].AsFloat, size ["height"].AsFloat);
 				
 					//Set the UI's parent to the canvas	
-				buttonClone.transform.SetParent (rParent);
+					buttonClone.transform.SetParent (parent);
 				break;
 				
 				case "KTInputField":
@@ -43,11 +41,11 @@ public class UIManager : MonoBehaviour {
 
 					//Update the rect transform as per data
 					var inputFieldRT = inputFieldClone.GetComponent<RectTransform> ();
-					inputFieldRT.anchoredPosition = new Vector2 (location ["x"].AsFloat + parent.position.x - rParent.sizeDelta.x/2, location ["y"].AsFloat + parent.position.y - rParent.sizeDelta.y/2);
+					inputFieldRT.anchoredPosition = new Vector2(location["x"].AsFloat, location["y"].AsFloat) + posRelatizer;
 					inputFieldRT.sizeDelta = new Vector2 (size ["width"].AsFloat, size ["height"].AsFloat);
 				
 					//Set the UI's parent to the canvas	
-				inputFieldClone.transform.SetParent (rParent);
+				inputFieldClone.transform.SetParent (parent);
 				break;
 				
 				case "KTLabel":
@@ -57,11 +55,11 @@ public class UIManager : MonoBehaviour {
 				
 					//Update the rect transform as per data
 					var textFieldRT = textFieldClone.GetComponent<RectTransform> ();
-				textFieldRT.anchoredPosition = new Vector2 (location ["x"].AsFloat + parent.position.x - rParent.sizeDelta.x/2, location ["y"].AsFloat + parent.position.y - rParent.sizeDelta.y/2);
+					textFieldRT.anchoredPosition = new Vector2(location["x"].AsFloat, location["y"].AsFloat) + posRelatizer;
 					textFieldRT.sizeDelta = new Vector2 (size ["width"].AsFloat, size ["height"].AsFloat);
 				
 					//Set the UI's parent to the canvas	
-				textFieldClone.transform.SetParent (rParent);
+				textFieldClone.transform.SetParent (parent);
 				break;
 			
 				//Scrollable UI containers
@@ -70,10 +68,10 @@ public class UIManager : MonoBehaviour {
 				
 					//Update rect transform of scroll view
 					var scrollViewRT = scrollViewClone.GetComponent<RectTransform>();
-					scrollViewRT.anchoredPosition = new Vector2(location ["x"].AsFloat + parent.position.x - rParent.sizeDelta.x/2, location ["y"].AsFloat + parent.position.y - rParent.sizeDelta.y/2);
+					scrollViewRT.anchoredPosition = new Vector2(location["x"].AsFloat, location["y"].AsFloat) + posRelatizer;
 					scrollViewRT.sizeDelta = new Vector2(size["width"].AsFloat, size["height"].AsFloat);
 				
-					scrollViewClone.transform.SetParent(this.transform.parent);
+					scrollViewClone.transform.SetParent(parent);
 				
 					//Update rect transform of panel
 					RectTransform scrollPanel = scrollViewClone.transform.GetChild(0).GetComponent<RectTransform>();
@@ -88,9 +86,9 @@ public class UIManager : MonoBehaviour {
 					GameObject panelClone = Instantiate(panel);
 				
 					var panelRT = panelClone.GetComponent<RectTransform>();
-					panelRT.anchoredPosition = new Vector2(location ["x"].AsFloat + parent.position.x - rParent.sizeDelta.x/2, location ["y"].AsFloat + parent.position.y - rParent.sizeDelta.y/2);
+					panelRT.anchoredPosition = new Vector2(location["x"].AsFloat, location["y"].AsFloat) + posRelatizer;
 					panelRT.sizeDelta = new Vector2(size["width"].AsFloat, size["height"].AsFloat);
-					panelClone.transform.SetParent(rParent);
+					panelClone.transform.SetParent(parent);
 				
 					panelLogic(panelClone.GetComponent<RectTransform>(), (JSONArray)uiObj["components"]);
 				break;
