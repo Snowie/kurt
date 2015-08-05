@@ -78,7 +78,7 @@ public class UIManager : MonoBehaviour {
 					scrollPanel.sizeDelta = new Vector2(uiObj["panelsize"]["width"].AsFloat, uiObj["panelsize"]["height"].AsFloat);
 					scrollPanel.anchoredPosition = new Vector2(0, -1 *scrollPanel.sizeDelta.y/2);
 				
-					panelLogic(scrollViewClone.transform.GetChild(0).GetComponent<RectTransform>(), (JSONArray)uiObj["components"]);
+					panelLogic(scrollViewClone.transform.GetChild(0).GetComponent<RectTransform>(), (JSONArray)uiObj["children"]);
 				break;
 			
 				//Static UI containers
@@ -90,7 +90,7 @@ public class UIManager : MonoBehaviour {
 					panelRT.sizeDelta = new Vector2(size["width"].AsFloat, size["height"].AsFloat);
 					panelClone.transform.SetParent(parent);
 				
-					panelLogic(panelClone.GetComponent<RectTransform>(), (JSONArray)uiObj["components"]);
+					panelLogic(panelClone.GetComponent<RectTransform>(), (JSONArray)uiObj["children"]);
 				break;
 			}
 		}
