@@ -1,88 +1,99 @@
 ﻿using UnityEngine;
 using System.Collections;
 using SimpleJSON;
+
+//TODO: Keep UI elements in a container for easy destruction in case of page change
 public class UIManager : MonoBehaviour {
+	//Prefab vars set in editor for instantiation
 	public UnityEngine.UI.Button button;
 	public UnityEngine.UI.InputField inputField;
 	public UnityEngine.UI.Text textField;
 	public GameObject scrollView;
 	public GameObject panel;
-	
-	void panelLogic(Transform parent,JSONArray components) {
-		Transform cParent = parent.transform;
+	public RectTransform canvasTransform;
+
+	//Children of ui containers use relative positions
+	void panelLogic(RectTransform parent,JSONArray components) {
+		//Transform cParent = parent.transform;
 		RectTransform rParent = parent.GetComponent<RectTransform> ();
+
 		foreach (JSONNode uiObj in components) {
 			JSONNode location = uiObj ["location"];
 			JSONNode size = uiObj ["size"];
 			
 			//Determine the type of ui object to render
 			switch (uiObj ["type"]) {
-			case "KTButton":
-				UnityEngine.UI.Button buttonClone = Instantiate (button);
+				case "KTButton":
+					UnityEngine.UI.Button buttonClone = Instantiate (button);
 
-				UnityEngine.UI.Text buttonText = buttonClone.transform.GetComponentInChildren<UnityEngine.UI.Text>();
-				buttonText.text = uiObj["id"].ToString();
+					UnityEngine.UI.Text buttonText = buttonClone.transform.GetComponentInChildren<UnityEngine.UI.Text>();
+					buttonText.text = uiObj["id"].ToString();
 
-				//Update the rect transform as per data
-				var buttonRT = buttonClone.GetComponent<RectTransform> ();
-				buttonRT.anchoredPosition = new Vector2 (location ["x"].AsFloat + parent.position.x, location ["y"].AsFloat + parent.position.y - rParent.sizeDelta.y/2);
-				buttonRT.sizeDelta = new Vector2 (size ["width"].AsFloat, size ["height"].AsFloat);
+					//Update the rect transform as per data
+					var buttonRT = buttonClone.GetComponent<RectTransform> ();
+					buttonRT.anchoredPosition = new Vector2 (location ["x"].AsFloat + parent.position.x - rParent.sizeDelta.x/2, location ["y"].AsFloat + parent.position.y - rParent.sizeDelta.y/2);
+					buttonRT.sizeDelta = new Vector2 (size ["width"].AsFloat, size ["height"].AsFloat);
 				
-				//Set the UI's parent to the canvas	
-				buttonClone.transform.SetParent (cParent);
+					//Set the UI's parent to the canvas	
+				buttonClone.transform.SetParent (rParent);
 				break;
 				
-			case "KTInputField":
-				UnityEngine.UI.InputField inputFieldClone = Instantiate (inputField);
+				case "KTInputField":
+					UnityEngine.UI.InputField inputFieldClone = Instantiate (inputField);
 
-				//Update the rect transform as per data
-				var inputFieldRT = inputFieldClone.GetComponent<RectTransform> ();
-				inputFieldRT.anchoredPosition = new Vector2 (location ["x"].AsFloat + parent.position.x, location ["y"].AsFloat + parent.position.y - rParent.sizeDelta.y/2);
-				inputFieldRT.sizeDelta = new Vector2 (size ["width"].AsFloat, size ["height"].AsFloat);
+					//Update the rect transform as per data
+					var inputFieldRT = inputFieldClone.GetComponent<RectTransform> ();
+					inputFieldRT.anchoredPosition = new Vector2 (location ["x"].AsFloat + parent.position.x - rParent.sizeDelta.x/2, location ["y"].AsFloat + parent.position.y - rParent.sizeDelta.y/2);
+					inputFieldRT.sizeDelta = new Vector2 (size ["width"].AsFloat, size ["height"].AsFloat);
 				
-				//Set the UI's parent to the canvas	
-				inputFieldClone.transform.SetParent (cParent);
+					//Set the UI's parent to the canvas	
+				inputFieldClone.transform.SetParent (rParent);
 				break;
 				
-			case "KTLabel":
-				UnityEngine.UI.Text textFieldClone = Instantiate (textField);
+				case "KTLabel":
+					UnityEngine.UI.Text textFieldClone = Instantiate (textField);
 				
-				textFieldClone.text = uiObj ["id"].ToString ();
+					textFieldClone.text = uiObj ["id"].ToString ();
 				
-				//Update the rect transform as per data
-				var textFieldRT = textFieldClone.GetComponent<RectTransform> ();
-				textFieldRT.anchoredPosition = new Vector2 (location ["x"].AsFloat + parent.position.x, location ["y"].AsFloat + parent.position.y - rParent.sizeDelta.y/2);
-				textFieldRT.sizeDelta = new Vector2 (size ["width"].AsFloat, size ["height"].AsFloat);
+					//Update the rect transform as per data
+					var textFieldRT = textFieldClone.GetComponent<RectTransform> ();
+				textFieldRT.anchoredPosition = new Vector2 (location ["x"].AsFloat + parent.position.x - rParent.sizeDelta.x/2, location ["y"].AsFloat + parent.position.y - rParent.sizeDelta.y/2);
+					textFieldRT.sizeDelta = new Vector2 (size ["width"].AsFloat, size ["height"].AsFloat);
 				
-				//Set the UI's parent to the canvas	
-				textFieldClone.transform.SetParent (cParent);
+					//Set the UI's parent to the canvas	
+				textFieldClone.transform.SetParent (rParent);
 				break;
-			case "KTScrollView":
-				GameObject scrollViewClone = Instantiate(scrollView);
+			
+				//Scrollable UI containers
+				case "KTScrollView":
+					GameObject scrollViewClone = Instantiate(scrollView);
 				
-				//Update rect transform of scroll view
-				var scrollViewRT = scrollViewClone.GetComponent<RectTransform>();
-				scrollViewRT.anchoredPosition = new Vector2(location ["x"].AsFloat + parent.position.x, location ["y"].AsFloat + parent.position.y - rParent.sizeDelta.y/2);
-				scrollViewRT.sizeDelta = new Vector2(size["width"].AsFloat, size["height"].AsFloat);
+					//Update rect transform of scroll view
+					var scrollViewRT = scrollViewClone.GetComponent<RectTransform>();
+					scrollViewRT.anchoredPosition = new Vector2(location ["x"].AsFloat + parent.position.x - rParent.sizeDelta.x/2, location ["y"].AsFloat + parent.position.y - rParent.sizeDelta.y/2);
+					scrollViewRT.sizeDelta = new Vector2(size["width"].AsFloat, size["height"].AsFloat);
 				
-				scrollViewClone.transform.SetParent(this.transform.parent);
+					scrollViewClone.transform.SetParent(this.transform.parent);
 				
-				//Update rect transform of panel
-				RectTransform scrollPanel = scrollViewClone.transform.GetChild(0).GetComponent<RectTransform>();
-				scrollPanel.sizeDelta = new Vector2(uiObj["panelsize"]["width"].AsFloat, uiObj["panelsize"]["height"].AsFloat);
+					//Update rect transform of panel
+					RectTransform scrollPanel = scrollViewClone.transform.GetChild(0).GetComponent<RectTransform>();
+					scrollPanel.sizeDelta = new Vector2(uiObj["panelsize"]["width"].AsFloat, uiObj["panelsize"]["height"].AsFloat);
+					scrollPanel.anchoredPosition = new Vector2(0, -1 *scrollPanel.sizeDelta.y/2);
 				
-				panelLogic(scrollViewClone.transform.GetChild(0).GetComponent<RectTransform>(), (JSONArray)uiObj["components"]);
+					panelLogic(scrollViewClone.transform.GetChild(0).GetComponent<RectTransform>(), (JSONArray)uiObj["components"]);
 				break;
-			//Static UI containers
-			case "KTPanel":
-				GameObject panelClone = Instantiate(panel);
+			
+				//Static UI containers
+				case "KTPanel":
+					GameObject panelClone = Instantiate(panel);
 				
-				var panelRT = panelClone.GetComponent<RectTransform>();
-				panelRT.anchoredPosition = new Vector2(location ["x"].AsFloat + parent.position.x, location ["y"].AsFloat + parent.position.y - rParent.sizeDelta.y/2);
-				panelRT.sizeDelta = new Vector2(size["width"].AsFloat, size["height"].AsFloat);
+					var panelRT = panelClone.GetComponent<RectTransform>();
+					panelRT.anchoredPosition = new Vector2(location ["x"].AsFloat + parent.position.x - rParent.sizeDelta.x/2, location ["y"].AsFloat + parent.position.y - rParent.sizeDelta.y/2);
+					panelRT.sizeDelta = new Vector2(size["width"].AsFloat, size["height"].AsFloat);
+					panelClone.transform.SetParent(rParent);
 				
-				panelLogic(panelClone.GetComponent<RectTransform>(), (JSONArray)uiObj["components"]);
-			break;
+					panelLogic(panelClone.GetComponent<RectTransform>(), (JSONArray)uiObj["components"]);
+				break;
 			}
 		}
 	}
@@ -102,84 +113,7 @@ public class UIManager : MonoBehaviour {
 		//Get the array of ui elements
 		JSONArray ui = (JSONArray)uiJSON ["ui"];
 
-		//Iterate over top-level ui
-		foreach(JSONNode uiObj in ui) {
-			JSONNode location = uiObj["location"];
-			JSONNode size = uiObj["size"];
-
-			//Determine the type of ui object to render
-			switch(uiObj["type"]) {
-				case "KTButton" :
-					UnityEngine.UI.Button buttonClone = Instantiate(button);
-
-					UnityEngine.UI.Text buttonText = buttonClone.transform.GetComponentInChildren<UnityEngine.UI.Text>();
-					buttonText.text = uiObj["id"].ToString();
-					
-					//Update the rect transform as per data
-					var buttonRT = buttonClone.GetComponent<RectTransform>();
-					buttonRT.anchoredPosition = new Vector2(location["x"].AsFloat, location["y"].AsFloat);
-					buttonRT.sizeDelta = new Vector2(size["width"].AsFloat, size["height"].AsFloat);
-					
-					//Set the UI's parent to the canvas	
-					buttonClone.transform.SetParent(this.transform.parent);
-				break;
-
-				case "KTInputField":
-					UnityEngine.UI.InputField inputFieldClone = Instantiate(inputField);
-					//Update the rect transform as per data
-					var inputFieldRT = inputFieldClone.GetComponent<RectTransform>();
-					inputFieldRT.anchoredPosition = new Vector2(location["x"].AsFloat, location["y"].AsFloat);
-					inputFieldRT.sizeDelta = new Vector2(size["width"].AsFloat, size["height"].AsFloat);
-				
-					//Set the UI's parent to the canvas	
-					inputFieldClone.transform.SetParent(this.transform.parent);
-				break;
-
-				case "KTLabel":
-					UnityEngine.UI.Text textFieldClone = Instantiate(textField);
-					
-					textFieldClone.text = uiObj["id"].ToString();
-
-					//Update the rect transform as per data
-					var textFieldRT = textFieldClone.GetComponent<RectTransform>();
-					textFieldRT.anchoredPosition = new Vector2(location["x"].AsFloat, location["y"].AsFloat);
-					textFieldRT.sizeDelta = new Vector2(size["width"].AsFloat, size["height"].AsFloat);
-				
-					//Set the UI's parent to the canvas	
-					textFieldClone.transform.SetParent(this.transform.parent);
-				break;
-
-				//Scrollable ui containers
-				case "KTScrollView":
-					GameObject scrollViewClone = Instantiate(scrollView);
-					
-					//Update rect transform of scroll view
-					var scrollViewRT = scrollViewClone.GetComponent<RectTransform>();
-					scrollViewRT.anchoredPosition = new Vector2(location["x"].AsFloat, location["y"].AsFloat);
-					scrollViewRT.sizeDelta = new Vector2(size["width"].AsFloat, size["height"].AsFloat);
-					
-					scrollViewClone.transform.SetParent(this.transform.parent);
-					
-					//Update rect transform of panel
-					RectTransform scrollPanel = scrollViewClone.transform.GetChild(0).GetComponent<RectTransform>();
-					scrollPanel.sizeDelta = new Vector2(uiObj["panelsize"]["width"].AsFloat, uiObj["panelsize"]["height"].AsFloat);
-					scrollPanel.anchoredPosition = new Vector2(location["x"].AsFloat - uiObj["panelsize"]["width"].AsFloat, location["y"].AsFloat - uiObj["panelsize"]["height"].AsFloat);
-					
-					panelLogic(scrollViewClone.transform.GetChild(0).GetComponent<RectTransform>(), (JSONArray)uiObj["components"]);
-				break;
-
-				//Static UI containers
-				case "KTPanel":
-					GameObject panelClone = Instantiate(panel);
-					
-					var panelRT = panelClone.GetComponent<RectTransform>();
-					panelRT.anchoredPosition = new Vector2(location ["x"].AsFloat, location ["y"].AsFloat);
-					panelRT.sizeDelta = new Vector2(size["width"].AsFloat, size["height"].AsFloat);
-					
-					panelLogic(panelClone.GetComponent<RectTransform>(), (JSONArray)uiObj["components"]);
-				break;
-			}
-		}
+		panelLogic(canvasTransform, ui);
 	}
 	
 	// Update is called once per frame
