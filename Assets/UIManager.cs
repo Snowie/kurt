@@ -10,10 +10,9 @@ public class UIManager : MonoBehaviour {
 	public UnityEngine.UI.Text textField;
 	public GameObject scrollView;
 	public GameObject panel;
-	public RectTransform canvasTransform;
 
 	//Children of ui containers use relative positions
-	void panelLogic(RectTransform parent,JSONArray components) {
+	IEnumerator panelLogic(RectTransform parent,JSONArray components) {
 		foreach (JSONNode uiObj in components) {
 			JSONNode location = uiObj ["location"];
 			JSONNode size = uiObj ["size"];
@@ -69,10 +68,8 @@ public class UIManager : MonoBehaviour {
 					RectTransform scrollPanel = scrollViewClone.transform.GetChild(0).GetComponent<RectTransform>();
 					scrollPanel.sizeDelta += new Vector2(0, uiObj["panelsize"]["height"].AsFloat - size["height"].AsFloat);
 					scrollPanel.localPosition = new Vector2(0, -1 * (uiObj["panelsize"]["height"].AsFloat - size["height"].AsFloat));
-					//scrollPanel.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, 0, size["width"].AsFloat);
-					//scrollPanel.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top, 0, size["height"].AsFloat);
 
-					panelLogic(scrollViewClone.transform.GetChild(0).GetComponent<RectTransform>(), (JSONArray)uiObj["children"]);
+					StartCoroutine(panelLogic(scrollViewClone.transform.GetChild(0).GetComponent<RectTransform>(), (JSONArray)uiObj["children"]));
 				break;
 
 				//Static UI containers
@@ -84,28 +81,63 @@ public class UIManager : MonoBehaviour {
 					panelRT.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, location["x"].AsFloat, size["width"].AsFloat);
 					panelRT.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top, location["y"].AsFloat, size["height"].AsFloat);
 
-					panelLogic(panelClone.GetComponent<RectTransform>(), (JSONArray)uiObj["children"]);
+					StartCoroutine(panelLogic(panelClone.GetComponent<RectTransform>(), (JSONArray)uiObj["children"]));
+				break;
+
+				//External widget loader, will not respect parent container dimensions yet!
+				case "KTWidget":
+					GameObject widgetPanel = Instantiate(panel);
+					widgetPanel.transform.SetParent(parent);
+					
+					RectTransform widgetRT = widgetPanel.GetComponent<RectTransform>();	
+					widgetRT.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, location["x"].AsFloat, size["width"].AsFloat);
+					widgetRT.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top, location["y"].AsFloat, size["height"].AsFloat);
+					
+					string widgetURL = uiObj["external"];
+					
+					//TODO: Change this to a post to pass arguments into destination JSON	
+					WWW widgetResponse = new WWW(widgetURL);
+					
+					yield return widgetResponse;
+					
+					var widgetJSON = JSON.Parse(widgetResponse.text);
+					
+					if(widgetResponse.text == ""){
+						Debug.Log("Empty Widget!");
+						break;
+					}
+					
+					JSONArray widgetArray = (JSONArray)widgetJSON ["widget"];
+					
+					StartCoroutine(panelLogic(widgetPanel.GetComponent<RectTransform>(), widgetArray));
 				break;
 			}
 		}
 	}
 
-	// Use this for initialization
-	void Start () {
-		string url = "http://snowie.github.io/kurt/";
-		WWW uiResponse = new WWW (url);
+	IEnumerator changeUI(string uiPage) {
+		//TODO: Clear ui container object.
 
+		WWW uiResponse = new WWW (uiPage);
+		
 		//Wait to finish grabbing the UI
-		while (!uiResponse.isDone)
-			;
-
+		yield return uiResponse;
+		Debug.Log ("Done getting ui.");
+		
 		//Parse the response
 		var uiJSON = JSON.Parse (uiResponse.text);
-
+		
 		//Get the array of ui elements
 		JSONArray ui = (JSONArray)uiJSON ["ui"];
+		
+		//Base container is the canvas
+		StartCoroutine(panelLogic(this.transform.parent.GetComponent<RectTransform>(), ui));
+	}
 
-		panelLogic(canvasTransform, ui);
+	// Use this for initialization
+	void Start () {
+		string currentUIPage = "http://snowie.github.io/kurt/index.html";
+		StartCoroutine(changeUI (currentUIPage));
 	}
 
 	// Update is called once per frame
