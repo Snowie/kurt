@@ -10,7 +10,6 @@ public class UIManager : MonoBehaviour {
 	public UnityEngine.UI.Text textField;
 	public GameObject scrollView;
 	public GameObject panel;
-	public RectTransform canvasTransform;
 
 	//Children of ui containers use relative positions
 	void panelLogic(RectTransform parent,JSONArray components) {
@@ -69,8 +68,6 @@ public class UIManager : MonoBehaviour {
 					RectTransform scrollPanel = scrollViewClone.transform.GetChild(0).GetComponent<RectTransform>();
 					scrollPanel.sizeDelta += new Vector2(0, uiObj["panelsize"]["height"].AsFloat - size["height"].AsFloat);
 					scrollPanel.localPosition = new Vector2(0, -1 * (uiObj["panelsize"]["height"].AsFloat - size["height"].AsFloat));
-					//scrollPanel.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, 0, size["width"].AsFloat);
-					//scrollPanel.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top, 0, size["height"].AsFloat);
 
 					panelLogic(scrollViewClone.transform.GetChild(0).GetComponent<RectTransform>(), (JSONArray)uiObj["children"]);
 				break;
@@ -85,6 +82,26 @@ public class UIManager : MonoBehaviour {
 					panelRT.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top, location["y"].AsFloat, size["height"].AsFloat);
 
 					panelLogic(panelClone.GetComponent<RectTransform>(), (JSONArray)uiObj["children"]);
+				break;
+
+				//External widget loader, will not respect parent container dimensions yet!
+				case "KTWidget":
+					GameObject widgetPanel = Instantiate(panel);
+					widgetPanel.transform.SetParent(parent);
+					
+					RectTransform widgetRT = widgetPanel.GetComponent<RectTransform>();	
+					widgetRT.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, location["x"].AsFloat, size["width"].AsFloat);
+					widgetRT.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top, location["y"].AsFloat, size["height"].AsFloat);
+					
+					string widgetURL = uiObj["external"].ToString();
+					WWW widgetResponse = new WWW(widgetURL);
+					
+					while(!widgetResponse.isDone)
+						;
+					
+					var widgetJSON = JSON.Parse(widgetResponse.text);
+					
+					panelLogic(widgetPanel.GetComponent<RectTransform>(), widgetJSON);
 				break;
 			}
 		}
@@ -105,7 +122,8 @@ public class UIManager : MonoBehaviour {
 		//Get the array of ui elements
 		JSONArray ui = (JSONArray)uiJSON ["ui"];
 
-		panelLogic(canvasTransform, ui);
+		//Base container is the canvas
+		panelLogic(this.transform.parent.GetComponent<RectTransform>(), ui);
 	}
 
 	// Update is called once per frame
