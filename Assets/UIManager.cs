@@ -93,7 +93,7 @@ public class UIManager : MonoBehaviour {
 					widgetRT.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, location["x"].AsFloat, size["width"].AsFloat);
 					widgetRT.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top, location["y"].AsFloat, size["height"].AsFloat);
 					
-					string widgetURL = uiObj["external"].ToString();
+					string widgetURL = uiObj["external"];
 					
 					//TODO: Change this to a post to pass arguments into destination JSON	
 					WWW widgetResponse = new WWW(widgetURL);
@@ -103,7 +103,15 @@ public class UIManager : MonoBehaviour {
 					
 					var widgetJSON = JSON.Parse(widgetResponse.text);
 					
-					panelLogic(widgetPanel.GetComponent<RectTransform>(), widgetJSON);
+					if(widgetResponse.text == ""){
+						Debug.Log("Empty Widget!");
+						break;
+					}
+					
+					Debug.Log (widgetResponse.text);
+					JSONArray widgetArray = (JSONArray)widgetJSON ["widget"];
+					
+					panelLogic(widgetPanel.GetComponent<RectTransform>(), widgetArray);
 				break;
 			}
 		}
@@ -130,7 +138,7 @@ public class UIManager : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		string currentUIPage = "http://snowie.github.io/kurt/";
+		string currentUIPage = "http://snowie.github.io/kurt/index.html";
 		changeUI (currentUIPage);
 	}
 
