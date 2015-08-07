@@ -94,6 +94,8 @@ public class UIManager : MonoBehaviour {
 					widgetRT.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top, location["y"].AsFloat, size["height"].AsFloat);
 					
 					string widgetURL = uiObj["external"].ToString();
+					
+					//TODO: Change this to a post to pass arguments into destination JSON	
 					WWW widgetResponse = new WWW(widgetURL);
 					
 					while(!widgetResponse.isDone)
@@ -107,23 +109,29 @@ public class UIManager : MonoBehaviour {
 		}
 	}
 
-	// Use this for initialization
-	void Start () {
-		string url = "http://snowie.github.io/kurt/";
-		WWW uiResponse = new WWW (url);
+	void changeUI(string uiPage) {
+		//TODO: Clear ui container object.
 
+		WWW uiResponse = new WWW (uiPage);
+		
 		//Wait to finish grabbing the UI
 		while (!uiResponse.isDone)
 			;
-
+		
 		//Parse the response
 		var uiJSON = JSON.Parse (uiResponse.text);
-
+		
 		//Get the array of ui elements
 		JSONArray ui = (JSONArray)uiJSON ["ui"];
-
+		
 		//Base container is the canvas
 		panelLogic(this.transform.parent.GetComponent<RectTransform>(), ui);
+	}
+
+	// Use this for initialization
+	void Start () {
+		string currentUIPage = "http://snowie.github.io/kurt/";
+		changeUI (currentUIPage);
 	}
 
 	// Update is called once per frame
