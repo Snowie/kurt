@@ -24,7 +24,7 @@ public class UIManager : MonoBehaviour {
 					buttonClone.transform.SetParent (parent);
 
 					UnityEngine.UI.Text buttonText = buttonClone.transform.GetComponentInChildren<UnityEngine.UI.Text>();
-					buttonText.text = uiObj["id"].ToString();
+					buttonText.text = uiObj["id"];
 
 					//Update the rect transform as per data
 					var buttonRT = buttonClone.GetComponent<RectTransform> ();
@@ -46,7 +46,7 @@ public class UIManager : MonoBehaviour {
 					UnityEngine.UI.Text textFieldClone = Instantiate (textField);
 					textFieldClone.transform.SetParent (parent);
 
-					textFieldClone.text = uiObj ["id"].ToString ();
+					textFieldClone.text = uiObj ["id"];
 
 					//Update the rect transform as per data
 					var textFieldRT = textFieldClone.GetComponent<RectTransform> ();
