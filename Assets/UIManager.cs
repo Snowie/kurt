@@ -10,6 +10,7 @@ public class UIManager : MonoBehaviour {
 	public UnityEngine.UI.Text textField;
 	public GameObject scrollView;
 	public GameObject panel;
+    public JSONNode theme = new JSONNode();
 
 	//Children of ui containers use relative positions
 	IEnumerator panelLogic(RectTransform parent, JSONArray components) {
@@ -30,6 +31,9 @@ public class UIManager : MonoBehaviour {
 					var buttonRT = buttonClone.GetComponent<RectTransform> ();
 					buttonRT.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, location["x"].AsFloat, size["width"].AsFloat);
 					buttonRT.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top, location["y"].AsFloat, size["height"].AsFloat);
+
+                    buttonClone.image.color = ConvertColor(theme ["KTButton"], "color", buttonClone.image.color);
+                    buttonText.color = ConvertColor(theme["KTButton"], "text", buttonText.color);
 				break;
 
 				case "KTInputField":
@@ -129,7 +133,7 @@ public class UIManager : MonoBehaviour {
 
 		//Parse the response
 		var uiJSON = JSON.Parse (uiResponse.text);
-		
+
 		//Get the array of ui elements
 		JSONArray ui = (JSONArray)uiJSON ["ui"];
 		
@@ -137,9 +141,83 @@ public class UIManager : MonoBehaviour {
 		StartCoroutine(panelLogic(this.transform.parent.GetComponent<RectTransform>(), ui));
 	}
 
+    IEnumerator changeTheme(string uiTheme)
+    {
+        //TODO: Clear ui container object.
+
+        WWW uiRes = new WWW(uiTheme);
+
+        //Wait to finish grabbing the UI
+        yield return uiRes;
+
+        //Parse the response
+        theme = JSON.Parse(uiRes.text);
+    }
+
+    Color ConvertColor(JSONNode node_theme, string colorName, Color color)
+    {
+        if(node_theme == null)
+            return color;
+
+        JSONNode node_color = node_theme[colorName];
+
+        if (node_color == null)
+            return color;
+
+        JSONNode name = node_color ["name"];
+
+        if (name != null)
+        {
+            switch ((string)name)
+            {
+                case "clear":
+                    return Color.clear;
+                    
+                case "white":
+                    return Color.white;
+                  
+                case "red":
+                    return Color.red;
+                    
+                case "magenta":
+                    return Color.magenta;
+                    
+                case "yellow":
+                    return Color.yellow;
+                    
+                case "green":
+                    return Color.green;
+                    
+                case "blue":
+                    return Color.blue;
+                    
+                case "cyan":
+                    return Color.cyan;
+                    
+                case "gray":
+                case "grey":
+                    return Color.gray;
+                    
+                case "black":
+                    return Color.black;
+            }
+        }
+        else
+        {
+            color.r = node_color["r"].AsFloat;
+            color.g = node_color["g"].AsFloat;
+            color.b = node_color["b"].AsFloat;
+            color.a = node_color["a"].AsFloat;
+        }
+
+        return color;
+    }
+
 	// Use this for initialization
 	void Start () {
-		string currentUIPage = "http://snowie.github.io/kurt/index.html";
+        string currentUIPage = "http://kirsten398.github.io/kurt/index.html";
+        string currentUITheme = "http://kirsten398.github.io/kurt/theme.html";
+        StartCoroutine(changeTheme(currentUITheme));
 		StartCoroutine(changeUI (currentUIPage));
 	}
 
